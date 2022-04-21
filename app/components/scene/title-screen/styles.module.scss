@@ -1,0 +1,24 @@
+.dButton {
+    display: inline-block;
+    padding: 10px 20px;
+    border: unset;
+    border-radius: 5px;
+    box-sizing: border-box;
+    text-decoration: none;
+    color: #333;
+    background-color: #fff;
+    transition: 0.2s;
+    font-size: 1em;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    &:hover {
+        transform: translateY(-3px);
+    }   
+
+    &:active {
+        transform: translateY(2px);
+        background-color: rgb(170, 170, 170);
+    }
+}
