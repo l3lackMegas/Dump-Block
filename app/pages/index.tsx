@@ -1,33 +1,43 @@
-import { useEffect, useState } from 'react'
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
+import { Component } from 'react'
 
-// Dependencies
-import { motion } from 'framer-motion'
+import { NextPageContext } from 'next'
+import Head from 'next/head'
 
 // Components
-
-// Scences
+import Layout from '../components/Layout'
 import TitleScreen from '../components/scene/title-screen'
 
-// Styles
-import styles from '../styles/Home.module.scss'
+/* Global State */
+import { IGameState } from '../store/GameState'
+import RootStore from '../store/index'
 
-// Contracts
-import ContractToken from "../../solidity/build/contracts/DumpBlockToken.json";
-import ContractAccount from "../../solidity/build/contracts/DumpBlockAccount.json";
-
-
-declare global {
-    interface Window { ethereum: any; }
+interface IRecipeProps {
+    
 }
 
-const Home: NextPage = () => {
-	
-	return <>
-		<TitleScreen />
-	</>;
+class Home extends Component<IRecipeProps> {
+
+    backgroundImage: String = 'url(/bg.jpg)'
+    
+    componentDidMount() {
+        console.log(123123)
+        setTimeout(() => {
+            RootStore.dispatch({
+                type: 'SET_STYLE',
+                data: {
+                    background: '#00000000',
+                    backgroundImage: this.backgroundImage
+                }
+            })
+        }, 100);
+    }
+
+    render() {
+        return <Layout {...this.props} siteTitle="Welcome">
+            <TitleScreen />
+        </Layout>
+    }
 }
 
-export default Home
+
+export default Home;

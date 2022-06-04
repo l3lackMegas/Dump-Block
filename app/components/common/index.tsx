@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, MotionStyle } from 'framer-motion';
 import { Children, DOMAttributes, MouseEventHandler } from 'react';
 
 import bsc, { useWallet } from '@binance-chain/bsc-use-wallet'
@@ -6,12 +6,15 @@ import bsc, { useWallet } from '@binance-chain/bsc-use-wallet'
 import styles from './styles.module.scss';
 export const LoadingIcon = (
 {
-    duration
+    duration,
+    elmKey
 } : {
     duration?: number
+    elmKey?: string
 }) => {
 
     return <motion.div
+    key={elmKey}
     className="loading-icon"
     animate={{
         scale: [0.75, 0.6, 2, 1.5, 1.5, 2, 0.6, 0.75],
@@ -26,17 +29,40 @@ export const LoadingIcon = (
         repeat: Infinity,
         repeatDelay: 0.5
     }}
+    exit={{
+        scale: 0.5,
+        opacity: 0,
+        transition: {
+            delay: 0.5,
+            duration: 0.5,
+        }
+    }}
 />;
 };
 
-export const DButton = ( { children, onClick } : {
+export const DButton = ( { children, onClick, elmKey, mode, style, disabled } : {
     onClick?: MouseEventHandler<HTMLButtonElement>
     children?: React.ReactNode;
+    elmKey?: string;
+    mode?: Array<String>;
+    disabled?: boolean;
+    style?: MotionStyle
 }) => {
+
+    let classSets = "";
+    if(mode) {
+        mode.forEach((item: String) => {
+            classSets += ' ' + styles['' + item];
+        });
+    }
     
-    return <button className={styles.dButton} onClick={(event)=>{onClick && onClick(event)}} >
+    return <motion.button disabled={disabled} key={elmKey} className={
+        styles.dButton + ' ' + classSets }
+        onClick={(event)=>{onClick && onClick(event)}}
+        style={style}
+    >
         {children}
-    </button>
+    </motion.button>
 }
 
 

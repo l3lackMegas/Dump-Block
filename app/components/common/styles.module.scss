@@ -13,6 +13,11 @@
     text-align: center;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     cursor: pointer;
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
     &:hover {
         transform: translateY(-3px);
     }   
@@ -20,5 +25,16 @@
     &:active {
         transform: translateY(2px);
         background-color: rgb(170, 170, 170);
+    }
+
+    &.mini {
+        padding: 5px 10px;
+        font-size: 0.8em;
+    }
+
+    &.outline {
+        background-color: transparent;
+        color: #fff;
+        border: 1px solid #fff;
     }
 }

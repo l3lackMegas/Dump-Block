@@ -55,7 +55,7 @@ module.exports = async function (callback) {
   )
   // Call Deposit function from DumpBlockAccount
   console.log("Call Deposit Function")
-  await dumpBlockAccount.deposit(web3.utils.toWei("100", "ether"))
+  await dumpBlockAccount.deposit(web3.utils.toWei("1000", "ether"))
   console.log("*** DumpBlock Token ***")
   balanceDumpBlockTokenAfterAccounts0 = await dumpBlockToken.balanceOf(accounts[0])
   balanceDumpBlockTokenAfterDumpBlockAccount = await dumpBlockToken.balanceOf(dumpBlockAccount.address)
