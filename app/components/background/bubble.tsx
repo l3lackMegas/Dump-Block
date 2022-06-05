@@ -27,7 +27,7 @@ const Bubbles = () => {
     ii = setInterval(() => {
       const newDataset = generateDataset();
       setDataset(newDataset);
-    }, 30e3);
+    }, 20e3);
   
     return (
       <AnimatePresence exitBeforeEnter>

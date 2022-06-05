@@ -10,6 +10,7 @@ import { connect } from "react-redux";
 
 // Components
 import { DButton, LoadingIcon, withWalletHook } from '../../common'
+import { Modal } from '../../common/modal'
 
 // Styles
 import styles from './styles.module.scss'
@@ -42,13 +43,15 @@ interface IState {
     characterData: any,
     isNoCharacter: boolean,
     charIndex: number
+    showModalPass: boolean
 }
 
 class MainMenu extends Component<IRecipeProps> {
 
     constructor(props: IRecipeProps | Readonly<IRecipeProps>) {
         super(props);
-        this.updateUserInfo = this.updateUserInfo.bind(this)    
+        this.updateUserInfo = this.updateUserInfo.bind(this);
+        this.buyPass = this.buyPass.bind(this);
     }
 
     state: IState = {
@@ -56,7 +59,8 @@ class MainMenu extends Component<IRecipeProps> {
         balance: 0,
         characterData: null,
         isNoCharacter: false,
-        charIndex: 0
+        charIndex: 0,
+        showModalPass: false
     }
 
     async componentDidMount() {
@@ -130,13 +134,103 @@ class MainMenu extends Component<IRecipeProps> {
         return num < 1 ? 1 : Math.floor(num);
     }
 
+    async buyPass(amount: number) {
+        const wallet = this.props.wallet;
+        await mintPass(wallet.account, amount);
+        this.updateUserInfo();
+        this.setState({
+            showModalPass: false
+        })
+    }
+
     render() {
         const wallet = this.props.wallet;
         const { user } = this.props;
-        const { charIndex, balance, isBalanceLoading, isNoCharacter } = this.state;
+        const { charIndex, isBalanceLoading, isNoCharacter, showModalPass } = this.state;
+        const balance = user.info?.balance || 0;
         const characterData = user.info && user.info.characterList && user.info.characterList.length > 0 ? user.info.characterList[charIndex] : null;
         const charLength = user.info && user.info.characterList ? user.info.characterList.length : 0;
-        return <motion.div
+        console.log(charLength)
+        return <>
+        <AnimatePresence exitBeforeEnter>
+                {showModalPass &&
+                    <Modal style={{
+                        color: 'white',
+                        backgroundColor: 'rgba(0, 0, 0, .5)',
+                        backdropFilter: 'blur(25px) saturate(130%)',
+                        borderTop: '3px #57454e solid',
+                        borderBottom: '3px #57454e solid',
+                    }}
+                    onClose={()=>{
+                        this.setState({
+                            showModalPass: false
+                        })
+                    }}>
+                        <h1>Buy PASS</h1>
+
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr 1fr',
+                            gridGap: '1rem',
+                            alignItems: 'center',
+                            justifyItems: 'center',
+                            margin: '1rem 0',
+                        }}>
+                            <DButton disabled={balance < 100} style={{width: '100%'}} onClick={async ()=>{
+                                this.buyPass(1);
+                            }}>
+                                <span>PASS x1</span>
+                                <span> {'(Use '}</span>
+                                <FontAwesomeIcon icon={faCoins} />
+                                <span> {' 100)'}</span>
+                            </DButton>
+                            <DButton disabled={balance < 500} style={{width: '100%'}} onClick={async ()=>{
+                                this.buyPass(5);
+                            }}>
+                                <span>PASS x5</span>
+                                <span> {'(Use '}</span>
+                                <FontAwesomeIcon icon={faCoins} />
+                                <span> {' 500)'}</span>
+                            </DButton>
+
+                            <DButton disabled={balance < 1000} style={{width: '100%'}} onClick={async ()=>{
+                                this.buyPass(10);
+                            }}>
+                                <span>PASS x10</span>
+                                <span> {'(Use '}</span>
+                                <FontAwesomeIcon icon={faCoins} />
+                                <span> {' 1000)'}</span>
+                            </DButton>
+
+                            <DButton disabled={balance < 1500} style={{width: '100%'}} onClick={async ()=>{
+                                this.buyPass(15);
+                            }}>
+                                <span>PASS x15</span>
+                                <span> {'(Use '}</span>
+                                <FontAwesomeIcon icon={faCoins} />
+                                <span> {' 1,500)'}</span>
+                            </DButton>
+                            <DButton disabled={balance < 2000} style={{width: '100%'}} onClick={async ()=>{
+                                this.buyPass(20);
+                            }}>
+                                <span>PASS x20</span>
+                                <span> {'(Use '}</span>
+                                <FontAwesomeIcon icon={faCoins} />
+                                <span> {' 2,000)'}</span>
+                            </DButton>
+                            <DButton disabled={balance < 5000} style={{width: '100%'}} onClick={async ()=>{
+                                this.buyPass(50);
+                            }}>
+                                <span>PASS x50</span>
+                                <span> {'(Use '}</span>
+                                <FontAwesomeIcon icon={faCoins} />
+                                <span> {' 5,000)'}</span>
+                            </DButton>
+                        </div>
+                    </Modal>
+                }
+            </AnimatePresence>
+        <motion.div
             style={{
                 position: 'absolute',
                 top: 'calc(50% + 50px)',
@@ -167,7 +261,7 @@ class MainMenu extends Component<IRecipeProps> {
                 }
             }}
             exit={{
-                transform: 'translate(-50%, -50%) scaleY(0.2)',
+                transform: 'translate(-50%, -50%) scaleY(0)',
                 opacity: 0
             }}
         >
@@ -195,7 +289,7 @@ class MainMenu extends Component<IRecipeProps> {
                     {characterData != null && <>
                         <img height={200} src={'/char-info/' + characterData.image}/>
                         <h2 style={{margin: '0', color: 'white'}}>{characterData.name}</h2>
-                        <p style={{marginBottom: '0', color: 'rgba(255, 255, 255, .5)'}}>Power: {characterData.attributes[0].value}</p>
+                        <p style={{marginBottom: '0', color: 'rgba(255, 255, 255, .5)'}}>Energy: {characterData.attributes[0].value}</p>
                     </>}
                 </div>
 
@@ -223,7 +317,7 @@ class MainMenu extends Component<IRecipeProps> {
                 </motion.div>
 
                 <motion.div style={{
-                        display: (charIndex + 1) == charLength ? 'none' : '',
+                        display: (charLength === 0 || (charIndex + 1) == charLength) ? 'none' : '',
                         position: 'absolute',
                         top: 0,
                         right: 0,
@@ -256,25 +350,47 @@ class MainMenu extends Component<IRecipeProps> {
                     width: '100%',
                 }}>
                     <div className={styles.flexBtn} style={{ display: 'flex' }}>
-                        <DButton mode={['outline']}
+                        <DButton
+                            disabled={balance < 1000}
+                            mode={['outline']}
                             onClick={async () => {
-                                await mintHero(wallet.account, "/char-info/" + this.randomRange() + '/index.json')
+                                let uri = await mintHero(wallet.account, "/char-info/" + this.randomRange() + '/index.json')
                                 await this.getAllHeroData();
-                            }}
-                        >Get Hero</DButton>
-                        <DButton mode={['outline']}
-                            onClick={async ()=>{
-                                await mintPass(wallet.account, 5);
                                 this.updateUserInfo();
+                                if(uri != false) {
+                                    this.setState({
+                                        charIndex: charLength
+                                    })
+                                }
+                                
                             }}
-                        >Buy PASS</DButton>
+                        >
+                            <span>Get Hero </span>
+                            <span> {'(Use '}</span>
+                            <FontAwesomeIcon icon={faCoins} />
+                            <span> {' 1,000)'}</span>
+                        </DButton>
+                        <DButton disabled={balance < 500} mode={['outline']}
+                            onClick={async ()=>{
+                                this.setState({
+                                    showModalPass: true
+                                })
+                            }}
+                        >
+                            <span>Buy PASS</span>
+                        </DButton>
                     </div>
-                    <DButton style={{
+                    <DButton disabled={charLength === 0} style={{
                         width: '100%',
-                    }}>Play!</DButton>
+                    }}
+                    onClick={() => {
+                        Router.push('/play/' + charIndex)
+                    }}
+                    >Play!</DButton>
                 </div>
             </div>
         </motion.div>
+        </>
     }
 }
 

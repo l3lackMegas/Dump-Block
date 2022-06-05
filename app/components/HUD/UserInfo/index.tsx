@@ -100,7 +100,9 @@ class UserInfo extends Component<IRecipeProps> {
         console.log(this.props)
         const wallet = this.props.wallet;
         const { user } = this.props;
-        const { balance, passAmount, isBalanceLoading, showDepositModal, showWithdrawModal } = this.state;
+        const { passAmount, isBalanceLoading, showDepositModal, showWithdrawModal } = this.state;
+
+        const balance: number = user.info?.balance || 0;
         return <>
             <AnimatePresence exitBeforeEnter>
                 {showDepositModal &&

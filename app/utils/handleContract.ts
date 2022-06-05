@@ -10,9 +10,9 @@ import * as ContractHero from "../../solidity/build/contracts/DumpHero.json";
 import { IGameState } from '../store/GameState'
 import RootStore from '../store/index'
 
-let TokenAddress = '0x32E1d7c75ba8f142731c2460B730af148615e4ad';
-let GameAddress = '0x044658D02d933e674Ec57425B0B83F10731bdbb3';
-let HeroAddress = '0x5312E506e5C8E9DB665839b4C8d16b050A0e9F74';
+let TokenAddress = '0xE15b118A2BFB7Ec5bCE07383Db23B44b9081Fa39';
+let GameAddress = '0x229a0ebE3937D9C182b4Cc4F3F47dA33529C5a18';
+let HeroAddress = '0x8A407a500a50C0a669a57f757af13881e9f7C660';
 
 export async function getMyBalance(account?: string | null){
     console.log(account)
@@ -214,34 +214,46 @@ export async function mintHero(account: string | null, urlToken: string){
     // let UserToken = new provider.eth.Contract(contractToken.abi, TokenAddress);
     let GameAccount = new provider.eth.Contract(contractAccount.abi, GameAddress);
     let HeroContract = new provider.eth.Contract(contractHero.abi, HeroAddress);
-
-    await GameAccount.methods.burn(provider.utils.toWei(amount.toString(), "ether")).send({from: account});
-    let transaction = await HeroContract.methods.mintHero(account, urlToken).send({from: account});
-    console.log(transaction)
-    const web3 = new Web3(window.ethereum);
-    let reciept = await web3.eth.getTransactionReceipt(transaction.transactionHash);
-    console.log(reciept);
-    let heroId = Web3.utils.hexToNumber(reciept.logs[0].topics[3]);
+    let uri = false
+    try {
+        await GameAccount.methods.burn(provider.utils.toWei((1000).toString(), "ether")).send({from: account});
+        let transaction = await HeroContract.methods.mintHero(account, urlToken).send({from: account});
+        console.log(transaction)
+        const web3 = new Web3(window.ethereum);
+        let reciept = await web3.eth.getTransactionReceipt(transaction.transactionHash);
+        console.log(reciept);
+        let heroId = Web3.utils.hexToNumber(reciept.logs[0].topics[3]);
+        
+        console.log(heroId);
     
-    console.log(heroId);
-
-    // get uri token
-    let uri = await HeroContract.methods.tokenURI(heroId).call()
-
-    console.log(uri);
+        // get uri token
+        uri = await HeroContract.methods.tokenURI(heroId).call()
     
-
-    // let allowanceAfter = await UserToken.methods.allowance(account, GameAccount.options.address).call();
-
-    // console.log("allowanceBefore", provider.utils.fromWei(allowanceAfter.toString()));
+        console.log(uri);
+        
     
-    RootStore.dispatch({
-        type: 'SET_LOADING_STATUS',
-        data: {
-            isLoading: false,
-            message: 'Done'
-        }
-    })
+        // let allowanceAfter = await UserToken.methods.allowance(account, GameAccount.options.address).call();
+    
+        // console.log("allowanceBefore", provider.utils.fromWei(allowanceAfter.toString()));
+        
+        RootStore.dispatch({
+            type: 'SET_LOADING_STATUS',
+            data: {
+                isLoading: false,
+                message: 'Done'
+            }
+        })
+    } catch (error) {
+        RootStore.dispatch({
+            type: 'SET_LOADING_STATUS',
+            data: {
+                isLoading: false,
+                message: 'Failed'
+            }
+        })
+    }
+
+    
     return uri
 };
 
@@ -331,7 +343,7 @@ export async function burnHero(account: string, tokenId: number) {
         RootStore.dispatch({
             type: 'SET_LOADING_STATUS',
             data: {
-                isLoading: falses,
+                isLoading: false,
                 message: 'Failed'
             }
         })
@@ -343,7 +355,7 @@ export async function mintPass(account: string, amount: number){
         type: 'SET_LOADING_STATUS',
         data: {
             isLoading: true,
-            message: 'Minting your pass...'
+            message: 'Comfirming transaction...'
         }
     })
     return new Promise(async (resolve, reject) => {
@@ -372,7 +384,7 @@ export async function mintPass(account: string, amount: number){
                 type: 'SET_LOADING_STATUS',
                 data: {
                     isLoading: true,
-                    message: 'Withdrawing...'
+                    message: 'Minting your pass...'
                 }
             })
 
@@ -411,6 +423,150 @@ export async function mintPass(account: string, amount: number){
         });
     })
 };
+
+export async function burnPass(account: string, amount: number){
+    RootStore.dispatch({
+        type: 'SET_LOADING_STATUS',
+        data: {
+            isLoading: true,
+            message: 'Comfirming transaction...'
+        }
+    })
+    return new Promise(async (resolve, reject) => {
+        console.log(account, amount)
+    
+        if(!account) return 0
+        const provider = new Web3(window.ethereum)
+        let contractToken: any = ContractToken;
+        let contractAccount: any = ContractAccount;
+        let UserToken = new provider.eth.Contract(contractToken.abi, TokenAddress);
+        let GameAccount = new provider.eth.Contract(contractAccount.abi, GameAddress);
+    
+        // let allowanceAfter = await UserToken.methods.allowance(account, GameAccount.options.address).call();
+    
+        // console.log("allowanceBefore", provider.utils.fromWei(allowanceAfter.toString()));
+    
+        UserToken.methods.approve(GameAccount.options.address, provider.utils.toWei((amount * 100).toString(), "ether")).send({from: account})
+        .then(async () => {
+            let allowanceAfter = await UserToken.methods.allowance(account, GameAccount.options.address).call();
+    
+            console.log("allowanceAfter", provider.utils.fromWei(allowanceAfter.toString()));
+            
+            // console.log("UserToken before balance", provider.utils.fromWei((await UserToken.methods.balanceOf(account).call()).toString()));
+            // console.log("before balance", provider.utils.fromWei((await GameAccount.methods.balance().call()).toString()));
+            RootStore.dispatch({
+                type: 'SET_LOADING_STATUS',
+                data: {
+                    isLoading: true,
+                    message: 'Burning your pass...'
+                }
+            })
+
+            try {
+                let result = await GameAccount.methods.burnPass(provider.utils.toWei(amount.toString(), "ether")).send({from: account});   
+            } catch (error) {
+                RootStore.dispatch({
+                    type: 'SET_LOADING_STATUS',
+                    data: {
+                        isLoading: false,
+                        message: 'Failed'
+                    }
+                })
+            }
+            
+            // console.log("After balance", provider.utils.fromWei((await GameAccount.methods.balanceOf(account).call()).toString()));
+            // console.log("After balance", readableBalance);
+            RootStore.dispatch({
+                type: 'SET_LOADING_STATUS',
+                data: {
+                    isLoading: false,
+                    message: 'Done'
+                }
+            })
+            resolve(true);
+        }).catch((err: any) => {
+            console.log(err);
+            RootStore.dispatch({
+                type: 'SET_LOADING_STATUS',
+                data: {
+                    isLoading: false,
+                    message: 'Done'
+                }
+            })
+            resolve(false);
+        });
+    })
+};
+
+export async function playGame(account: string, cost: number, rewards: number, chance: number){
+    console.log(account)
+    
+    if(!account) return 0
+    RootStore.dispatch({
+        type: 'SET_LOADING_STATUS',
+        data: {
+            isLoading: true,
+            message: 'Starting transaction...'
+        }
+    })
+    
+    
+    
+    const provider = new Web3(window.ethereum)
+    // let contractToken: any = ContractToken;
+    let contractAccount: any = ContractAccount;
+    // let contractHero: any = ContractHero;
+    // let UserToken = new provider.eth.Contract(contractToken.abi, TokenAddress);
+    let GameAccount = new provider.eth.Contract(contractAccount.abi, GameAddress);
+
+    let rand = 0;
+    let status = false;
+    try {
+        let burnResult = await burnPass(account, cost);
+        if(!burnResult) {
+            throw new Error("Burn pass failed");
+        }
+        RootStore.dispatch({
+            type: 'SET_LOADING_STATUS',
+            data: {
+                isLoading: true,
+                message: 'Processing...'
+            }
+        })
+
+        rand = Math.random() * 100;
+
+        if(rand <= chance){
+            await GameAccount.methods.mint(provider.utils.toWei(rewards.toString(), "ether")).send({from: account});
+            status = true;
+        } else {
+            await GameAccount.methods.mint(provider.utils.toWei((0).toString(), "ether")).send({from: account});
+        }
+
+        RootStore.dispatch({
+            type: 'SET_LOADING_STATUS',
+            data: {
+                isLoading: false,
+                message: 'DONE'
+            }
+        })
+
+    } catch {
+        RootStore.dispatch({
+            type: 'SET_LOADING_STATUS',
+            data: {
+                isLoading: false,
+                message: 'Failed...'
+            }
+        })
+    }
+
+    return {
+        success: status,
+        rand: rand,
+        chance: chance
+    };
+}
 
 export async function getPassAmount(account: string){
     console.log(account)
