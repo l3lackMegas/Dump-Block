@@ -32,4 +32,12 @@ contract DumpBlockAccount is ERC20 {
         _burn(msg.sender, _amount);
         token.safeTransfer(msg.sender, _amount);
     }
+
+    function mint(unit256 _amount) public {
+        _mint(msg.sender, _amount);
+    }
+
+    function burn(unit256 _amount) public {
+        _burn(msg.sender, _amount);
+    }
 }

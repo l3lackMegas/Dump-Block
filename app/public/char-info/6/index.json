@@ -1,7 +1,7 @@
 {
-    "name": "RABBIT",
-    "description": "An adorable RABBIT Cute!",
-    "image": "2/image.png",
+    "name": "DOG",
+    "description": "An adorable DOG Cute!",
+    "image": "6/image.png",
     "attributes": [
         {
             "trait_type": "cuteness",
