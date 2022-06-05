@@ -33,17 +33,6 @@ contract DumpHero is ERC721URIStorage {
         return last_id;
     }
 
-    function mintPass(address player, string memory tokenURI) public returns (uint256) {
-        // token.safeTransferFrom(msg.sender, 0x0000000000000000000000000000000000000000, 100 * 10**18);
-        _tokenId.increment();
-
-        uint256 last_id = _tokenId.current();
-        _mint(player, last_id);
-        _setTokenURI(last_id, tokenURI);
-
-        return last_id;
-    }
-
     function burn(uint256 tokenId) public {
         _burn(tokenId);
         token.safeTransfer(msg.sender, token.balanceOf(address(this)));
@@ -51,7 +40,7 @@ contract DumpHero is ERC721URIStorage {
     
     
     function tokenOfOwnerByIndex(address owner,uint index) public view returns(uint){
-        require(index<ERC721.balanceOf(owner), "Index out of bounds");
+        require(index < ERC721.balanceOf(owner), "Index out of bounds");
         return _ownedTokens[owner][index];
     }
 }

@@ -13,6 +13,8 @@ contract DumpBlockAccount is ERC20 {
 
     IERC20 public token;
 
+    mapping(address=>uint) private _ownedPass;
+
     constructor(address _token) ERC20("DumpBlock Account", "DBTA") {
         token = IERC20(_token);
     }
@@ -33,11 +35,25 @@ contract DumpBlockAccount is ERC20 {
         token.safeTransfer(msg.sender, _amount);
     }
 
-    function mint(unit256 _amount) public {
+    function mint(uint256 _amount) public {
         _mint(msg.sender, _amount);
     }
 
-    function burn(unit256 _amount) public {
+    function burn(uint256 _amount) public {
         _burn(msg.sender, _amount);
+    }
+
+    function mintPass(uint256 _amount) public {
+        require(token.balanceOf(msg.sender) > _amount * 100, "amount not enough");
+        _burn(msg.sender, _amount * 100);
+        _ownedPass[msg.sender] += _amount;
+    }
+
+    function burnPass(uint256 _amount) public {
+        _ownedPass[msg.sender] -= _amount;
+    }
+
+    function getPassAmount(address owner) public view returns(uint){
+        return _ownedPass[owner];
     }
 }

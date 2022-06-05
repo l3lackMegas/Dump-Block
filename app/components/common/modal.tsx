@@ -41,6 +41,7 @@ export const Modal = ( { children, style, onClose } : {
             backgroundColor: 'white',
             overflow: 'hidden',
             borderRadius: 10,
+            boxShadow: '#361f39 0px 0px 50px 0px',
             ...style,
         }}
         initial={{ 

@@ -1,5 +1,6 @@
 import '../styles/globals.scss'
 import type { AppProps } from 'next/app'
+import { Provider } from "react-redux";
 import { UseWalletProvider } from '@binance-chain/bsc-use-wallet'
 import bsc from '@binance-chain/bsc-use-wallet'
 import { AnimateSharedLayout, AnimatePresence, MotionConfig } from "framer-motion";
@@ -16,6 +17,7 @@ import { IGameState } from '../store/GameState'
 import RootStore from '../store/index'
 import { LoadingIcon } from '../components/common';
 
+import store from "../store";
 
 interface IState {
     isFinishIntro: boolean
@@ -36,6 +38,7 @@ class MyApp extends App<AppProps> {
         
         
         return (
+            <Provider store={store}>
             <AnimateSharedLayout>
                 <motion.div
                     style={{
@@ -66,6 +69,7 @@ class MyApp extends App<AppProps> {
                     </AnimatePresence>
                 </UseWalletProvider>
             </AnimateSharedLayout>
+            </Provider>
         )
     }
 }

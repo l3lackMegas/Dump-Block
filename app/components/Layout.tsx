@@ -4,9 +4,11 @@ import { Component } from 'react'
 import Router from 'next/router'
 import { motion } from 'framer-motion'
 import { AnimateSharedLayout, AnimatePresence } from "framer-motion";
+import { connect } from "react-redux";
 
 /* Global State */
 import { IGameState } from '../store/GameState'
+import { IUserState } from '../store/UserInfo'
 import RootStore from '../store/index'
 
 // Components
@@ -18,6 +20,8 @@ interface IRecipeProps {
     OGImage?: string,
     description?: string,
     children?: any
+    user: IUserState
+    dispatch: any
 }
 
 interface IState {
@@ -31,16 +35,27 @@ class Layout extends Component<IRecipeProps> {
         gameState: RootStore.getState().gameState
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         this.setState({
             isMounted: true
         })
         const wallet = this.props.wallet
         const {pathname} = Router
         if(wallet.status === 'disconnected' || wallet.status === 'error') {
+            this.props.dispatch({
+                type: 'DESTROY_USER_INFO'
+            });
             if(pathname != '/' ){
                 Router.push('/')
             }
+        } else if(wallet.status === 'connected') {
+            this.props.dispatch({
+                type: 'SET_USER_INFO',
+                info: {
+                    ...this.props.user.info,
+                    wallet: wallet.account
+                }
+            });
         }
 
         console.log(RootStore.getState().gameState)
@@ -141,4 +156,10 @@ class Layout extends Component<IRecipeProps> {
 }
 
 
-export default withWalletHook(Layout);
+export default withWalletHook(connect(
+    //mapStateToProps,
+    (state: any) => ({
+        user: state.userInfo
+    })
+    // mapDispatchToProps,  that's another subject
+)(Layout));

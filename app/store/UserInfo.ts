@@ -1,7 +1,15 @@
+interface ICharactor {
+    name: string,
+    description: string,
+    image: string,
+    attributes: Array<any>
+}
+
 interface IUserInfo {
-    username: string
-    displayname: string
-    user_img: string
+    userAddress: string
+    balance: number
+    pass: number
+    characterList: Array<ICharactor>
 }
 
 export interface IUserState {
@@ -11,21 +19,32 @@ export interface IUserState {
 
 const INITIAL_STATE = { 
     loggedIn: false,
-    info: {}
+    info: {
+        userAddress: "",
+        balance: 0,
+        pass: 0,
+        characterList: []
+    }
 }
 
 function userInfoReducer(state = INITIAL_STATE, action: {type: string, info?: IUserInfo}) {
     switch (action.type) {
         case "SET_USER_INFO":
             return {
+                ...state,
                 loggedIn: true,
                 info: action.info
             }
 
         case "DESTROY_USER_INFO":
             return {
+                ...state,
                 loggedIn: false,
-                info: {}
+                info: {
+                    userAddress: "",
+                    balance: 0,
+                    pass: 0
+                }
             }
     
         default:

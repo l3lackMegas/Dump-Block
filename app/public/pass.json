@@ -1,0 +1,11 @@
+{
+    "name": "PASS",
+    "description": "A pass that allow you go to dungeon.",
+    "image": "pass.png",
+    "attributes": [
+        {
+            "trait_type": "system",
+            "value": 1
+        }
+    ]
+}

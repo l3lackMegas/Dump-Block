@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Web3 from 'web3'
 import Router from 'next/router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCoins } from '@fortawesome/free-solid-svg-icons'
+import { faCoins, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { connect } from "react-redux";
 
 // Components
 import { DButton, LoadingIcon, withWalletHook } from '../../common'
@@ -15,6 +16,7 @@ import styles from './styles.module.scss'
 
 /* Global State */
 import { IGameState } from '../../../store/GameState'
+import { IUserState } from '../../../store/UserInfo'
 import RootStore from '../../../store/index'
 
 // Contracts
@@ -23,10 +25,15 @@ import * as ContractAccount from "../../../../solidity/build/contracts/DumpBlock
 import { head } from 'lodash'
 
 // Utilities
-import { getMyBalance, getAllHero, mintHero } from '../../../utils/handleContract'
+import { getMyBalance, getAllHero, mintHero, burnHero, mintPass, getPassAmount } from '../../../utils/handleContract'
+import env from '../../../utils/env'
+
+const { APP_URL } = env
 
 interface IRecipeProps {
     wallet: any
+    dispatch: any
+    user: IUserState
 }
 
 interface IState {
@@ -34,20 +41,22 @@ interface IState {
     balance: number,
     characterData: any,
     isNoCharacter: boolean,
+    charIndex: number
 }
 
 class MainMenu extends Component<IRecipeProps> {
 
     constructor(props: IRecipeProps | Readonly<IRecipeProps>) {
         super(props);
-        
+        this.updateUserInfo = this.updateUserInfo.bind(this)    
     }
 
     state: IState = {
         isBalanceLoading: true,
         balance: 0,
         characterData: null,
-        isNoCharacter: false
+        isNoCharacter: false,
+        charIndex: 0
     }
 
     async componentDidMount() {
@@ -57,28 +66,76 @@ class MainMenu extends Component<IRecipeProps> {
             isBalanceLoading: false,
             balance: await getMyBalance(wallet.account)
         })
+        this.getAllHeroData();
+    }
 
+    async updateUserInfo() {
+        const wallet = this.props.wallet;
+        this.props.dispatch({
+            type: 'SET_USER_INFO',
+            info: {
+                ...this.props.user.info,
+                balance: await getMyBalance(wallet.account),
+                pass: await getPassAmount(wallet.account),
+            }
+        });
+    }
+
+    async getAllHeroData() {
+        const wallet = this.props.wallet;
         let characterList: Array<any> = (await getAllHero(wallet.account)) || [];
 
         if(characterList.length > 0) {
-
-            fetch(characterList[0])
-            .then((res) => res.json())
-            .then((data) => {
-                this.setState({
-                    characterData: data
-                });  
+            let charListData: Array<any> = [];
+            for(let i = 0; i < characterList.length; i++) {
+                let characterLink = characterList[i].uri;
+                try {
+                    // await burnHero(wallet.account, characterList[i].id);
+                    let res = await fetch(APP_URL + characterLink);
+                    let charData = await res.json();
+                    charListData.push({
+                        ...charData,
+                        heroId: characterList[i].id
+                    });
+                } catch (error) {
+                    
+                }
+            }
+            this.props.dispatch({
+                type: 'SET_USER_INFO',
+                info: {
+                    ...this.props.user.info,
+                    characterList: charListData
+                }
+            });
+            this.setState({
+                isNoCharacter: false
             })
-        } else [
+        } else {
+            this.props.dispatch({
+                type: 'SET_USER_INFO',
+                info: {
+                    ...this.props.user.info,
+                    characterList: []
+                }
+            });
             this.setState({
                 isNoCharacter: true
             })
-        ]
+        }
+    }
+
+    randomRange() {
+        let num = Math.random() * 8
+        return num < 1 ? 1 : Math.floor(num);
     }
 
     render() {
         const wallet = this.props.wallet;
-        const { balance, isBalanceLoading, characterData, isNoCharacter } = this.state;
+        const { user } = this.props;
+        const { charIndex, balance, isBalanceLoading, isNoCharacter } = this.state;
+        const characterData = user.info && user.info.characterList && user.info.characterList.length > 0 ? user.info.characterList[charIndex] : null;
+        const charLength = user.info && user.info.characterList ? user.info.characterList.length : 0;
         return <motion.div
             style={{
                 position: 'absolute',
@@ -122,14 +179,73 @@ class MainMenu extends Component<IRecipeProps> {
                     backgroundColor: 'rgba(255, 255, 255, .05)',
                 }}
             >
+                {charLength > 0 && 
+                    <p style={{
+                        margin: 0,
+                        padding: '5px 0',
+                        color: 'white',
+                        textAlign: 'center',
+                    }}
+                    >{charIndex + 1} / {charLength}</p>
+                }
+                
                 <div className='container center'>
                     {characterData == null && isNoCharacter == false && <LoadingIcon/>}
                     {isNoCharacter && <h1 style={{ color: 'white' }}>No character yet...</h1>}
                     {characterData != null && <>
-                        <img src={characterData.image}/>
+                        <img height={200} src={'/char-info/' + characterData.image}/>
                         <h2 style={{margin: '0', color: 'white'}}>{characterData.name}</h2>
+                        <p style={{marginBottom: '0', color: 'rgba(255, 255, 255, .5)'}}>Power: {characterData.attributes[0].value}</p>
                     </>}
                 </div>
+
+                <motion.div style={{
+                        display: charIndex > 0 ? '' : 'none',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: 50,
+                        height: '100%',
+                        color: 'white',
+                        fontSize: '2em',
+                        cursor: 'pointer',
+                    }}
+                    whileHover={{
+                        backgroundColor: 'rgba(0, 0, 0, .25)'
+                    }}
+                    onClick={() => {
+                        this.setState({
+                            charIndex: (charIndex - 1) < 0 ? charLength - 1 : charIndex - 1
+                        })
+                    }}
+                >
+                    <FontAwesomeIcon style={{top: '60%'}} className='container center' icon={faChevronLeft}/>
+                </motion.div>
+
+                <motion.div style={{
+                        display: (charIndex + 1) == charLength ? 'none' : '',
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: 50,
+                        height: '100%',
+                        color: 'white',
+                        fontSize: '2em',
+                        cursor: 'pointer',
+                    }}
+                    whileHover={{
+                        backgroundColor: 'rgba(0, 0, 0, .25)'
+                    }}
+                    onClick={() => {
+                        this.setState({
+                            charIndex: (charIndex + 1) % charLength
+                        })
+                    }}
+                >
+                    <FontAwesomeIcon style={{top: '60%'}} className='container center' icon={faChevronRight}/>
+                </motion.div>
+                
+
             </motion.div>
             <div style={{
                 position: 'relative',
@@ -142,15 +258,16 @@ class MainMenu extends Component<IRecipeProps> {
                     <div className={styles.flexBtn} style={{ display: 'flex' }}>
                         <DButton mode={['outline']}
                             onClick={async () => {
-                                await mintHero(wallet.account, "https://ipfs.io/ipfs/Qmd9MCGtdVz2miNumBHDbvj8bigSgTwnr4SbyH6DNnpWdt?filename=1-PUG.json")
-                                await getAllHero(wallet.account);
+                                await mintHero(wallet.account, "/char-info/" + this.randomRange() + '/index.json')
+                                await this.getAllHeroData();
                             }}
                         >Get Hero</DButton>
                         <DButton mode={['outline']}
                             onClick={async ()=>{
-                                await getAllHero(wallet.account);
+                                await mintPass(wallet.account, 5);
+                                this.updateUserInfo();
                             }}
-                        >Choose Hero</DButton>
+                        >Buy PASS</DButton>
                     </div>
                     <DButton style={{
                         width: '100%',
@@ -161,4 +278,10 @@ class MainMenu extends Component<IRecipeProps> {
     }
 }
 
-export default withWalletHook(MainMenu);
+export default withWalletHook(connect(
+    //mapStateToProps,
+    (state: any) => ({
+        user: state.userInfo
+    })
+    // mapDispatchToProps,  that's another subject
+)(MainMenu));
