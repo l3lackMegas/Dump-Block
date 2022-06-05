@@ -1,5 +1,5 @@
 const env = {
-    APP_URL: 'http://dumpblock.jaruwat.dev'
+    APP_URL: 'https://dumpblock.jaruwat.dev'
 }
 
 export default env;
