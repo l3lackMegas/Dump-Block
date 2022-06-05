@@ -1,0 +1,11 @@
+{
+    "name": "NEKO",
+    "description": "An angry NEKO Cute!",
+    "image": "5/image.png",
+    "attributes": [
+        {
+            "trait_type": "angry",
+            "value": 350
+        }
+    ]
+}

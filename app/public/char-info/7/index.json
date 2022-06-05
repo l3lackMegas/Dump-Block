@@ -1,0 +1,11 @@
+{
+    "name": "GOAT",
+    "description": "An adorable GOAT Cute!",
+    "image": "7/image.png",
+    "attributes": [
+        {
+            "trait_type": "cuteness",
+            "value": 150
+        }
+    ]
+}

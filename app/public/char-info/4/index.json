@@ -1,0 +1,11 @@
+{
+    "name": "MONKEY",
+    "description": "An adorable MONKEY Boy!",
+    "image": "4/image.png",
+    "attributes": [
+        {
+            "trait_type": "funny",
+            "value": 250
+        }
+    ]
+}

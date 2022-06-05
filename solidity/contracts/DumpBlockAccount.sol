@@ -13,7 +13,9 @@ contract DumpBlockAccount is ERC20 {
 
     IERC20 public token;
 
-    constructor(address _token) public ERC20("DumpBlock Account", "DBTA") {
+    mapping(address=>uint) private _ownedPass;
+
+    constructor(address _token) ERC20("DumpBlock Account", "DBTA") {
         token = IERC20(_token);
     }
 
@@ -23,21 +25,35 @@ contract DumpBlockAccount is ERC20 {
     }
 
     function deposit(uint256 _amount) public {
-        // Amount must be greater than zero
-        require(_amount > 0, "amount cannot be 0");
-
-        // Transfer MyToken to smart contract
+        require(_amount > 0, "amount cannot be zero");
         token.safeTransferFrom(msg.sender, address(this), _amount);
-
-        // Mint FarmToken to msg sender
         _mint(msg.sender, _amount);
     }
 
     function withdraw(uint256 _amount) public {
-        // Burn FarmTokens from msg sender
         _burn(msg.sender, _amount);
-
-        // Transfer MyTokens from this smart contract to msg sender
         token.safeTransfer(msg.sender, _amount);
+    }
+
+    function mint(uint256 _amount) public {
+        _mint(msg.sender, _amount);
+    }
+
+    function burn(uint256 _amount) public {
+        _burn(msg.sender, _amount);
+    }
+
+    function mintPass(uint256 _amount) public {
+        require(token.balanceOf(msg.sender) > _amount * 100, "amount not enough");
+        _burn(msg.sender, _amount * 100);
+        _ownedPass[msg.sender] += _amount;
+    }
+
+    function burnPass(uint256 _amount) public {
+        _ownedPass[msg.sender] -= _amount;
+    }
+
+    function getPassAmount(address owner) public view returns(uint){
+        return _ownedPass[owner];
     }
 }

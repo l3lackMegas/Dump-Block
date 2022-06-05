@@ -1,0 +1,11 @@
+{
+    "name": "CHICKEN",
+    "description": "An adorable CHICKEN Cute!",
+    "image": "8/image.png",
+    "attributes": [
+        {
+            "trait_type": "cuteness",
+            "value": 150
+        }
+    ]
+}
