@@ -23,11 +23,11 @@ let ii: any;
 const Bubbles = () => {
     const [dataset, setDataset] = useState(generateDataset());
 
-    clearInterval(ii);
-    ii = setInterval(() => {
-      const newDataset = generateDataset();
-      setDataset(newDataset);
-    }, 20e3);
+    // clearInterval(ii);
+    // ii = setInterval(() => {
+    //   const newDataset = generateDataset();
+    //   setDataset(newDataset);
+    // }, 20e3);
   
     return (
       <AnimatePresence exitBeforeEnter>
@@ -43,6 +43,10 @@ const Bubbles = () => {
               transition={{
                 duration: 30,
                 ease: 'linear'
+              }}
+              onAnimationEnd={() => {
+                const newDataset = generateDataset();
+                setDataset(newDataset); 
               }}
               r={(index % 5) == 0 ? 1 : index % 5}
             />

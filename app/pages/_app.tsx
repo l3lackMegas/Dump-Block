@@ -39,36 +39,36 @@ class MyApp extends App<AppProps> {
         
         return (
             <Provider store={store}>
-            <AnimateSharedLayout>
-                <motion.div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                    }}
-                    initial={{
-                        opacity: 0,
-                    }}
-                    animate={{
-                        opacity: 1,
-                        transition: {
-                            duration: 1,
-                            delay: .5
-                        }
-                    }}
-                >
-                    <Bubbles/>
-                    <GameBackground/>
-                    <GameBackgroundImage/>
-                </motion.div>
-                <UseWalletProvider chainId={97}>
-                    <AnimatePresence exitBeforeEnter>
-                        <Component {...pageProps} key={router.pathname} />
-                    </AnimatePresence>
-                </UseWalletProvider>
-            </AnimateSharedLayout>
+                <AnimateSharedLayout>
+                    <motion.div
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                        }}
+                        initial={{
+                            opacity: 0,
+                        }}
+                        animate={{
+                            opacity: 1,
+                            transition: {
+                                duration: 1,
+                                delay: .5
+                            }
+                        }}
+                    >
+                        <Bubbles/>
+                        <GameBackground/>
+                        <GameBackgroundImage/>
+                    </motion.div>
+                    <UseWalletProvider chainId={97}>
+                        <AnimatePresence exitBeforeEnter>
+                            <Component {...pageProps} key={router.pathname} />
+                        </AnimatePresence>
+                    </UseWalletProvider>
+                </AnimateSharedLayout>
             </Provider>
         )
     }
