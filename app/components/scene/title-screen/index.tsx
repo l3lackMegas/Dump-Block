@@ -19,6 +19,9 @@ import RootStore from '../../../store/index'
 import * as ContractToken from "../../../../solidity/build/contracts/DumpBlockToken.json";
 import * as ContractAccount from "../../../../solidity/build/contracts/DumpBlockAccount.json";
 
+import env from '../../../utils/env';
+const { TokenAddress } = env;
+
 interface IRecipeProps {
     wallet: any
 }
@@ -41,7 +44,7 @@ class TitleScreen extends Component<IRecipeProps> {
         let blockNumber: number = wallet.getBlockNumber();
     }
 
-    addToken() {
+    async addToken() {
         try {
           // wasAdded is a boolean. Like any RPC method, an error may be thrown.
           const wasAdded = await window.ethereum.request({
@@ -49,10 +52,10 @@ class TitleScreen extends Component<IRecipeProps> {
             params: {
               type: 'ERC20', // Initially only supports ERC20, but eventually more!
               options: {
-                address: tokenAddress, // The address that the token is at.
-                symbol: tokenSymbol, // A ticker symbol or shorthand, up to 5 chars.
-                decimals: tokenDecimals, // The number of decimals in the token
-                image: tokenImage, // A string url of the token logo
+                address: TokenAddress, // The address that the token is at.
+                symbol: 'DBT', // A ticker symbol or shorthand, up to 5 chars.
+                decimals: 18, // The number of decimals in the token
+                // image: tokenImage, // A string url of the token logo
               },
             },
           });
@@ -143,14 +146,16 @@ class TitleScreen extends Component<IRecipeProps> {
                     </div>
                     } */}
                     
-                    {(wallet.status === 'disconnected' || wallet.status === 'error') &&
+                    {(wallet.status === 'disconnected' || wallet.status === 'error') && <>
                         <DButton key="connect-btn" onClick={()=>{
                             wallet.connect('injected');
                         }}>Connect with wallet</DButton>
-                        <DButton style={{display: 'block', marginTop: 20}} key="connect-btn" onClick={()=>{
+                        <DButton style={{display: 'block', margin: '20px auto 0 auto'}}
+                            mode={['outline']}
+                            key="connect-btn" onClick={()=>{
                             this.addToken();
                         }}>Add DBT to wallet</DButton>
-                    }
+                    </>}
 
                     {(wallet.status === 'connecting' || wallet.status === 'connected' || isLoading) &&
                         <LoadingIcon key="loading-icon"/>
