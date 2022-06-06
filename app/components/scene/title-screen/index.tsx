@@ -27,7 +27,7 @@ class TitleScreen extends Component<IRecipeProps> {
 
     constructor(props: IRecipeProps | Readonly<IRecipeProps>) {
         super(props);
-        
+        this.addToken = this.addToken.bind(this);
     }
 
     backgroundImage: String = 'url(/bg.jpg)'
@@ -39,6 +39,32 @@ class TitleScreen extends Component<IRecipeProps> {
     componentDidMount() {
         const wallet = this.props.wallet;
         let blockNumber: number = wallet.getBlockNumber();
+    }
+
+    addToken() {
+        try {
+          // wasAdded is a boolean. Like any RPC method, an error may be thrown.
+          const wasAdded = await window.ethereum.request({
+            method: 'wallet_watchAsset',
+            params: {
+              type: 'ERC20', // Initially only supports ERC20, but eventually more!
+              options: {
+                address: tokenAddress, // The address that the token is at.
+                symbol: tokenSymbol, // A ticker symbol or shorthand, up to 5 chars.
+                decimals: tokenDecimals, // The number of decimals in the token
+                image: tokenImage, // A string url of the token logo
+              },
+            },
+          });
+
+          if (wasAdded) {
+            console.log('Thanks for your interest!');
+          } else {
+            console.log('Your loss!');
+          }
+        } catch (error) {
+          console.log(error);
+        }
     }
 
     render() {
@@ -121,6 +147,9 @@ class TitleScreen extends Component<IRecipeProps> {
                         <DButton key="connect-btn" onClick={()=>{
                             wallet.connect('injected');
                         }}>Connect with wallet</DButton>
+                        <DButton style={{display: 'block', marginTop: 20}} key="connect-btn" onClick={()=>{
+                            this.addToken();
+                        }}>Add DBT to wallet</DButton>
                     }
 
                     {(wallet.status === 'connecting' || wallet.status === 'connected' || isLoading) &&
